@@ -9,12 +9,14 @@ Services: AWS, Docker, Jupyter Notebooks, Postman
 
 Languages: Python, SQL
 
-Backend: AWS API Gateway, AWS Lambda, ElephantSQL
+Backend: AWS API Gateway, AWS Lambda, AWS S3, ElephantSQL
 
 ## Getting Started
 ### Prerequisites
 - SQL
-- AWS Lambda and AWS API Gateway
+- AWS Lambda
+- AWS API Gateway
+- AWS S3
 - PostgreSQL
 
 ### Deployment to AWS
