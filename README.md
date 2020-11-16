@@ -44,7 +44,7 @@ At this point you'll want to head over the AWS GUI for function creation at AWS 
 
 ## Development
 ### Architecture
-<img src="https://github.com/nonprofit-intake/data_engineering/blob/dev/images/fampromarch.png" width="500" height="350">
+<img src="https://github.com/nonprofit-intake/data_engineering/blob/main/images/fampromarch.png" width="500" height="350">
 Backend deployed serverlessly through AWS API Gateway and AWS Lambda.
 
 ### Endpoint - Return User Info
