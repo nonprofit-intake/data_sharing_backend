@@ -3,7 +3,7 @@
 ## Tech Stack
 Languages: Python, SQL
 
-Backend: Docker, AWS API Gateway, AWS Lambda, AWS S3, ElephantSQL, PostgreSQL, Pandas
+Backend: Docker, AWS API Gateway, AWS Lambda, AWS S3, ElephantSQL, PostgreSQL, Pandas, bcrypt
 
 ## Getting Started
 ### Deployment to AWS
