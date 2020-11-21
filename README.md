@@ -1,8 +1,4 @@
-# Family Promise of Spokane Data Sharing API
-## Project Overview
-What happens to local utilities customers that fell behind on payments prior to ceasing to be customers? How can we use our resources to prevent future homelessness?
-
-Our Solution: Design an API that uses unique identifiers to determine whether an ex-customer began receiving services from service providers assisting people experiencing homelessness.
+# Family Promise of Spokane Data Engineering
 
 ## Tech Stack
 Services: AWS, Docker, Jupyter Notebooks, Postman
