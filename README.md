@@ -1,9 +1,17 @@
-# Family Promise of Spokane Data Engineering
+# Family Promise of Spokane Data Sharing
 
 ## Tech Stack
-Languages: Python, SQL
+**Languages**: Python, SQL
 
-Backend: Docker, AWS API Gateway, AWS Lambda, AWS S3, ElephantSQL, PostgreSQL, Pandas, bcrypt
+**Dependencies**: Pandas, bcrypt, psycopg2
+
+**Services**: Docker, AWS API Gateway, AWS Lambda, AWS S3, AWS CloudWatch ElephantSQL, PostgreSQL
+
+
+## Architecture
+![Architecture Diagram](./diagrams/fampromarch.png)
+
+Backend deployed serverlessly through AWS API Gateway and AWS Lambda.
 
 ## Getting Started
 ### Deployment to AWS
@@ -29,13 +37,8 @@ Do not install if these packages already exist in the aws folder.
 
 At this point you'll want to head over the AWS GUI for function creation at AWS Lambda. 
 
-## Development
-### Architecture
-![Architecture Diagram](./diagrams/fampromarch.png)
 
-Backend deployed serverlessly through AWS API Gateway and AWS Lambda.
-
-### Endpoint - Return User Info
+## Endpoint - Return User Info
 
 **URL**
 
@@ -93,3 +96,6 @@ Returns the last name, first name, enroll date, exit date, income at entry, inco
 - USER = username
 - PASSWORD = password
 - AUTH_PWD = secret key
+
+## License
+MIT
