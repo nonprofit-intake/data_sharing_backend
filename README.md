@@ -9,9 +9,11 @@
 
 
 ## Architecture
-![Architecture Diagram](./diagrams/fampromarch.png)
+![Non-technical Diagram](./diagrams/non-tech-diagram.png)
 
-Backend deployed serverlessly through AWS API Gateway and AWS Lambda.
+Backend deployed serverlessly through AWS API Gateway and AWS Lambda:
+
+![Architecture Diagram](./diagrams/fampromarch.png)
 
 ## Getting Started
 ### Deployment to AWS
