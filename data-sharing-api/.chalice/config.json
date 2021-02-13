@@ -3,7 +3,14 @@
   "app_name": "data-sharing-api",
   "stages": {
     "dev": {
-      "api_gateway_stage": "api"
+      "api_gateway_stage": "api",
+      "environment_variables": {
+        "DB_HOST": "drona.db.elephantsql.com",
+        "DB_USER": "vytvspcu",
+        "DB_PASSWORD": "dY-9LiIppKfYL94d9ShVXApCBayxPu9Z",
+        "AUTH_PWD": "IesousKurios",
+        "ENCRYPTION_KEY": "RwX4lZCHJ7CgHelwBStHsXpo9HonHDqaIT-5lHdT-mw="
+      }
     }
   }
 }
