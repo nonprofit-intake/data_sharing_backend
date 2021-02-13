@@ -2,22 +2,35 @@ import os
 import json
 import math
 import pandas as pd
-import psycopg2-binary
+import psycopg2
 import cryptography
 from chalice import Chalice, BadRequestError
+from cryptography.fernet import Fernet, InvalidToken
 
+# initialize Chalice
 app = Chalice(app_name='data-sharing-api')
 
+# initialize Fernet suite
+encryption_key = str.encode(os.environ["ENCRYPTION_KEY"])
+fernet = Fernet(encryption_key)
+
+# assign environment variables
 HOST = os.environ['HOST']
 USER = os.environ['USER']
 PASSWORD = os.environ['PASSWORD']
 AUTH_PWD = os.environ['AUTH_PWD']
 ENCRYPTION_KEY = str.encode(os.environ["ENCRYPTION_KEY"])
 
+# middleware
+def decipher(cipher_string):
+    deciphered_string = fernet.decrypt(str.encode(cipher_string)).decode("utf-8")
+    return deciphered_string
+
 
 @app.route('/')
 def index():
     return {'Status': 'OK'}
+
 
 @app.route('/guests', methods=['POST'])
 def match_guests():
@@ -41,60 +54,78 @@ def match_guests():
             raise BadRequestError(str(error))
 
         try:
-            lower_last_names = [name.lower() for name in request_body['last_name']]
+            req_last_names = [name.lower() for name in request_body['last_name']]
             
-            if len(lower_last_names) == 1:
-            query = f"SELECT * FROM guestsdev WHERE last_name='{lower_last_names[0]}'"
+            if len(req_last_names) == 1:
+                query = f"""SELECT ssn, enroll_date, exit_date, exit_destination, first_name, income_at_entry, income_at_exit, last_name
+                            FROM guestsdev 
+                            WHERE last_name='{req_last_names[0]}'"""
             else:
-            query = f"SELECT * FROM guestsdev WHERE last_name IN {tuple(lower_last_names)}"
+                query = f"""SELECT ssn, enroll_date, exit_date, exit_destination, first_name, income_at_entry, income_at_exit, last_name 
+                            FROM guestsdev 
+                            WHERE last_name IN {tuple(req_last_names)}"""
 
-            # creates a dataframe from the results of the query
+            # creates  dataframe from query results (automatically drops connection)
             with psycopg2.connect(host=HOST,user=USER,password=PASSWORD) as connection:
-            df = pd.read_sql_query(query, connection)
+                df = pd.read_sql_query(query, connection)
 
-            # wrangling to remove index, create readable ssn, str format of enroll and exit date
-            df.drop(columns="index", inplace=True)
-            df['ssn'] = df['ssn'].apply(lambda row: b"".join(row) if pd.notnull(row) else math.nan)
-            df['enroll_date'] = df['enroll_date'].apply(lambda row: row.strftime("%m-%d-%Y") if pd.notnull(row) else math.nan)
-            df['exit_date'] = df['exit_date'].apply(lambda row: row.strftime("%m-%d-%Y") if pd.notnull(row) else math.nan)
+            def wrangle(df):
+                """
+                Wrangles data for use in matching function.
+                """
+                wrangled_df = df.copy()
+                
+                # decipher SSNs
+                df['ssn'] = df['ssn'].apply(lambda row_value: decipher(row_value) if pd.notnull(row_value) else math.nan)
+
+                # format date strings for readability
+                df['enroll_date'] = df['enroll_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
+                df['exit_date'] = df['exit_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
+
+                return wrangled_df
             
             def find_matches(df):
-                '''Find last names in returned query that match request_body last names/
+                """
+                Find last names in query dataframe that match request_body last names.
                 If it's a match for the last name, check that it's a match for SSN.
-                '''
-                # create a copy of df
-                df = df.copy()
+                """
+                match_df = df.copy()
 
-                # drop where ssn is nan
-                df.dropna(subset=['ssn'], inplace=True)
-                df['match'] = False
+                # drop records where ssn is nan
+                match_df.dropna(subset=['ssn'], inplace=True)
+                match_df['match'] = False
                 
-                for i, req_last_name in enumerate(lower_last_names):
-                for j, row_last_name in enumerate(df['last_name']):
-                        # if df row is equal to request value
-                        if row_last_name == req_last_name:
-                            # set match value equal to true instead
-                            df['match'].iloc[j] = bcrypt.checkpw(request_body['ssn'][i].encode('utf8'), df['ssn'].iloc[j])
-                
-                df.drop(columns='ssn', inplace=True)
+                # if record data is equal to request value, set match value equal to true
+                for i, req_last_name in enumerate(req_last_names):
+                    for j, row_last_name in enumerate(match_df['last_name']):
+                            if row_last_name == req_last_name and request_body['ssn'][i] == match_df['ssn'].iloc[j]:
+                                match_df['match'].iloc[j] = True
+                    
+                match_df.drop(columns='ssn', inplace=True)
             
-                return df
+                return match_df
 
-            # call the find match function and create a new df of both true/false matches
-            match_df = find_matches(df)
+            # wrangle data for matching
+            wrangled_df = wrangle(df)
 
+            # create match column
+            match_df = find_matches(wrangled_df)
+
+            # create dataframes for complete and partial matches
             df_true = match_df[match_df['match'] == True].drop(columns='match')
             df_false = match_df[match_df['match'] == False].drop(columns='match')
         
+            # convert dataframes to JSON format and send as response
             res_true = df_true.to_json(orient="records")
             res_false = df_false.to_json(orient="records")
             
-            res = {'complete_matches': json.loads(res_true),
+            raw_response = {'complete_matches': json.loads(res_true),
                 'partial_matches': json.loads(res_false)}
-            res_json = json.dumps(res)
-
-            final = json.loads(res_json)
-            return final
+            
+            dumped_response = json.dumps(raw_response)
+            final_response = json.loads(dumped_response)
+            
+            return final_response
 
         except (Exception, psycopg2.Error) as error:
             raise BadRequestError(str(error))
