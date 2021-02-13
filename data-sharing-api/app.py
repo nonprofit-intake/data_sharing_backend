@@ -9,6 +9,7 @@ from cryptography.fernet import Fernet, InvalidToken
 
 # initialize Chalice
 app = Chalice(app_name='data-sharing-api')
+app.debug = True # ONLY FOR DEVELOPMENT
 
 # initialize Fernet suite
 encryption_key = str.encode(os.environ["ENCRYPTION_KEY"])
