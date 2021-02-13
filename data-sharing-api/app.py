@@ -34,11 +34,11 @@ def wrangle(df):
     wrangled_df = df.copy()
     
     # decipher SSNs
-    df['ssn'] = df['ssn'].apply(lambda row_value: decipher(row_value) if pd.notnull(row_value) else math.nan)
+    wrangled_df['ssn'] = wrangled_df['ssn'].apply(lambda row_value: decipher(row_value) if pd.notnull(row_value) else math.nan)
 
     # format date strings for readability
-    df['enroll_date'] = df['enroll_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
-    df['exit_date'] = df['exit_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
+    wrangled_df['enroll_date'] = wrangled_df['enroll_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
+    wrangled_df['exit_date'] = wrangled_df['exit_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
 
     return wrangled_df
 
@@ -105,7 +105,7 @@ def match_guests():
                             WHERE last_name IN {tuple(req_last_names)}"""
 
             # creates  dataframe from query results (automatically drops connection)
-            with psycopg2.connect(DB_HOST=DB_HOST,DB_USER=DB_USER,DB_PWD=DB_PWD) as connection:
+            with psycopg2.connect(host=DB_HOST, user=DB_USER, password=DB_PWD) as connection:
                 df = pd.read_sql_query(query, connection)
 
             # wrangle data for matching
