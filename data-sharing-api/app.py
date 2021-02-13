@@ -5,11 +5,11 @@ import pandas as pd
 import psycopg2
 import cryptography
 from chalice import Chalice, BadRequestError
-from cryptography.fernet import Fernet, InvalidToken
+from cryptography.fernet import Fernet
 
 # initialize Chalice app
 app = Chalice(app_name='data-sharing-api')
-app.debug = True # ONLY FOR DEVELOPMENT
+# app.debug = True # ONLY FOR DEVELOPMENT
 
 # initialize Fernet suite
 encryption_key = str.encode(os.environ["ENCRYPTION_KEY"])
