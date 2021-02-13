@@ -16,10 +16,10 @@ encryption_key = str.encode(os.environ["ENCRYPTION_KEY"])
 fernet = Fernet(encryption_key)
 
 # assign environment variables
-HOST = os.environ['HOST']
-USER = os.environ['USER']
-PASSWORD = os.environ['PASSWORD']
-AUTH_PWD = os.environ['AUTH_PWD']
+DB_HOST = os.environ['DB_HOST']
+DB_USER = os.environ['DB_USER']
+DB_PWD = os.environ['DB_PWD']
+WEB_PWD = os.environ['WEB_PWD']
 ENCRYPTION_KEY = str.encode(os.environ["ENCRYPTION_KEY"])
 
 # helper functions
@@ -76,7 +76,7 @@ def match_guests():
     if request_body:
         try:
             assert isinstance(request_body["pwd"], str), "'pwd' must be a string type"
-            assert request_body["pwd"] == AUTH_PWD, "Incorrect password"
+            assert request_body["pwd"] == WEB_PWD, "Incorrect password"
             assert isinstance(request_body, dict), "JSON object must be a dictionary"
             assert "last_name" in request_body.keys(), "Input JSON object requires last_name key"
             assert "ssn" in request_body.keys(), "Input JSON object requires ssn key"
@@ -105,7 +105,7 @@ def match_guests():
                             WHERE last_name IN {tuple(req_last_names)}"""
 
             # creates  dataframe from query results (automatically drops connection)
-            with psycopg2.connect(host=HOST,user=USER,password=PASSWORD) as connection:
+            with psycopg2.connect(DB_HOST=DB_HOST,DB_USER=DB_USER,DB_PWD=DB_PWD) as connection:
                 df = pd.read_sql_query(query, connection)
 
             # wrangle data for matching

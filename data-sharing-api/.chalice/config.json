@@ -7,8 +7,8 @@
       "environment_variables": {
         "DB_HOST": "drona.db.elephantsql.com",
         "DB_USER": "vytvspcu",
-        "DB_PASSWORD": "dY-9LiIppKfYL94d9ShVXApCBayxPu9Z",
-        "AUTH_PWD": "IesousKurios",
+        "DB_PWD": "dY-9LiIppKfYL94d9ShVXApCBayxPu9Z",
+        "WEB_PWD": "IesousKurios",
         "ENCRYPTION_KEY": "RwX4lZCHJ7CgHelwBStHsXpo9HonHDqaIT-5lHdT-mw="
       }
     }
