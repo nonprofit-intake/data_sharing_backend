@@ -7,7 +7,7 @@ import cryptography
 from chalice import Chalice, BadRequestError
 from cryptography.fernet import Fernet, InvalidToken
 
-# initialize Chalice
+# initialize Chalice app
 app = Chalice(app_name='data-sharing-api')
 app.debug = True # ONLY FOR DEVELOPMENT
 
@@ -22,12 +22,49 @@ PASSWORD = os.environ['PASSWORD']
 AUTH_PWD = os.environ['AUTH_PWD']
 ENCRYPTION_KEY = str.encode(os.environ["ENCRYPTION_KEY"])
 
-# middleware
+# helper functions
 def decipher(cipher_string):
     deciphered_string = fernet.decrypt(str.encode(cipher_string)).decode("utf-8")
     return deciphered_string
 
+def wrangle(df):
+    """
+    Wrangles data for use in matching function.
+    """
+    wrangled_df = df.copy()
+    
+    # decipher SSNs
+    df['ssn'] = df['ssn'].apply(lambda row_value: decipher(row_value) if pd.notnull(row_value) else math.nan)
 
+    # format date strings for readability
+    df['enroll_date'] = df['enroll_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
+    df['exit_date'] = df['exit_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
+
+    return wrangled_df
+
+def find_matches(df, request_body, req_last_names):
+    """
+    Find last names in query dataframe that match request_body last names.
+    If it's a match for the last name, check that it's a match for SSN.
+    """
+    match_df = df.copy()
+
+    # drop records where ssn is nan
+    match_df.dropna(subset=['ssn'], inplace=True)
+    match_df['match'] = False
+    
+    # if record data is equal to request value, set match value equal to true
+    for i, req_last_name in enumerate(req_last_names):
+        for j, row_last_name in enumerate(match_df['last_name']):
+                if row_last_name == req_last_name and request_body['ssn'][i] == match_df['ssn'].iloc[j]:
+                    match_df['match'].iloc[j] = True
+        
+    match_df.drop(columns='ssn', inplace=True)
+
+    return match_df
+
+
+# routes
 @app.route('/')
 def index():
     return {'Status': 'OK'}
@@ -55,6 +92,7 @@ def match_guests():
             raise BadRequestError(str(error))
 
         try:
+            # convert all request names to lowercase, last names in database are lowercase
             req_last_names = [name.lower() for name in request_body['last_name']]
             
             if len(req_last_names) == 1:
@@ -70,47 +108,11 @@ def match_guests():
             with psycopg2.connect(host=HOST,user=USER,password=PASSWORD) as connection:
                 df = pd.read_sql_query(query, connection)
 
-            def wrangle(df):
-                """
-                Wrangles data for use in matching function.
-                """
-                wrangled_df = df.copy()
-                
-                # decipher SSNs
-                df['ssn'] = df['ssn'].apply(lambda row_value: decipher(row_value) if pd.notnull(row_value) else math.nan)
-
-                # format date strings for readability
-                df['enroll_date'] = df['enroll_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
-                df['exit_date'] = df['exit_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
-
-                return wrangled_df
-            
-            def find_matches(df):
-                """
-                Find last names in query dataframe that match request_body last names.
-                If it's a match for the last name, check that it's a match for SSN.
-                """
-                match_df = df.copy()
-
-                # drop records where ssn is nan
-                match_df.dropna(subset=['ssn'], inplace=True)
-                match_df['match'] = False
-                
-                # if record data is equal to request value, set match value equal to true
-                for i, req_last_name in enumerate(req_last_names):
-                    for j, row_last_name in enumerate(match_df['last_name']):
-                            if row_last_name == req_last_name and request_body['ssn'][i] == match_df['ssn'].iloc[j]:
-                                match_df['match'].iloc[j] = True
-                    
-                match_df.drop(columns='ssn', inplace=True)
-            
-                return match_df
-
             # wrangle data for matching
             wrangled_df = wrangle(df)
 
             # create match column
-            match_df = find_matches(wrangled_df)
+            match_df = find_matches(wrangled_df, request_body, req_last_names)
 
             # create dataframes for complete and partial matches
             df_true = match_df[match_df['match'] == True].drop(columns='match')
