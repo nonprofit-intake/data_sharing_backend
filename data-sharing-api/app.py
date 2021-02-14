@@ -42,27 +42,56 @@ def wrangle(df):
 
     return wrangled_df
 
+# def find_matches(df, request_body):
+#     """
+#     Find last names in query dataframe that match request_body last names.
+#     If it's a match for the last name, check that it's a match for SSN.
+#     """
+#     match_df = df.copy()
+
+#     # drop records where ssn is nan
+#     match_df.dropna(subset=['ssn'], inplace=True)
+#     match_df['match'] = False
+    
+#     # if record data is equal to request value, set match value equal to true
+#     for i, req_last_name in enumerate(request_body['last_name']):
+#         for j, row_last_name in enumerate(match_df['last_name']):
+#                 if row_last_name == req_last_name and request_body['ssn'][i] == match_df['ssn'].iloc[j]:
+#                     match_df['match'].iloc[j] = True
+        
+#     match_df.drop(columns='ssn', inplace=True)
+
+#     return match_df
+
 def find_matches(df, request_body):
     """
-    Find last names in query dataframe that match request_body last names.
-    If it's a match for the last name, check that it's a match for SSN.
+    Assumes all records in input dataframe are partial matches until matched.
+    Compares request body and input dataframe for matching last_name and SSN.
+    Returns two dataframes in JSON format: full and partial matches.
     """
-    match_df = df.copy()
+    guest_data = tuple(zip(request_body["last_name"], request_body["ssn"]))
 
-    # drop records where ssn is nan
-    match_df.dropna(subset=['ssn'], inplace=True)
-    match_df['match'] = False
-    
-    # if record data is equal to request value, set match value equal to true
-    for i, req_last_name in enumerate(request_body['last_name']):
-        for j, row_last_name in enumerate(match_df['last_name']):
-                if row_last_name == req_last_name and request_body['ssn'][i] == match_df['ssn'].iloc[j]:
-                    match_df['match'].iloc[j] = True
-        
-    match_df.drop(columns='ssn', inplace=True)
+    full_match_dfs = []
+    all_partial_matches = df.copy()
 
-    return match_df
+    for last_name, ssn in guest_data:
+        if ((all_partial_matches["last_name"] == last_name) & (all_partial_matches["ssn"] == ssn)).any():
+            full_match = df[(df["last_name"] == last_name) & (df["ssn"] == ssn)]
+            full_match_dfs.append(full_match)
+            
+            all_partial_matches.drop(full_match.index, inplace=True)
 
+    all_full_matches = pd.concat(full_match_dfs)
+
+    # drop ssn columns
+    all_full_matches.drop(columns='ssn', inplace=True)
+    all_partial_matches.drop(columns='ssn', inplace=True)
+
+    # convert datfarames to JSON format
+    fm_json = all_full_matches.to_json(orient="records")
+    pm_json = all_partial_matches.to_json(orient="records")
+
+    return fm_json, pm_json
 
 # routes
 @app.route('/')
@@ -123,8 +152,8 @@ def match_guests():
             res_true = df_true.to_json(orient="records")
             res_false = df_false.to_json(orient="records")
             
-            raw_response = {'complete_matches': json.loads(res_true),
-                'partial_matches': json.loads(res_false)}
+            raw_response = {'all_full_matches': json.loads(res_true),
+                'all_partial_matches': json.loads(res_false)}
             
             dumped_response = json.dumps(raw_response)
             final_response = json.loads(dumped_response)
