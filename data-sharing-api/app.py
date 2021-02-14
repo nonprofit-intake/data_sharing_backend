@@ -42,7 +42,7 @@ def wrangle(df):
 
     return wrangled_df
 
-def find_matches(df, request_body, req_last_names):
+def find_matches(df, request_body):
     """
     Find last names in query dataframe that match request_body last names.
     If it's a match for the last name, check that it's a match for SSN.
@@ -54,7 +54,7 @@ def find_matches(df, request_body, req_last_names):
     match_df['match'] = False
     
     # if record data is equal to request value, set match value equal to true
-    for i, req_last_name in enumerate(req_last_names):
+    for i, req_last_name in enumerate(request_body['last_name']):
         for j, row_last_name in enumerate(match_df['last_name']):
                 if row_last_name == req_last_name and request_body['ssn'][i] == match_df['ssn'].iloc[j]:
                     match_df['match'].iloc[j] = True
@@ -92,17 +92,18 @@ def match_guests():
             raise BadRequestError(str(error))
 
         try:
-            # convert all request names to lowercase, last names in database are lowercase
-            req_last_names = [name.lower() for name in request_body['last_name']]
+            # convert all request names to lowercase; last names in database are lowercase
+            lowered_last_names = [name.lower() for name in request_body['last_name']]
+            request_body["last_name"] = lowered_last_names
             
-            if len(req_last_names) == 1:
+            if len(lowered_last_names) == 1:
                 query = f"""SELECT ssn, enroll_date, exit_date, exit_destination, first_name, income_at_entry, income_at_exit, last_name
                             FROM guestsdev 
-                            WHERE last_name='{req_last_names[0]}'"""
+                            WHERE last_name='{lowered_last_names[0]}'"""
             else:
                 query = f"""SELECT ssn, enroll_date, exit_date, exit_destination, first_name, income_at_entry, income_at_exit, last_name 
                             FROM guestsdev 
-                            WHERE last_name IN {tuple(req_last_names)}"""
+                            WHERE last_name IN {tuple(lowered_last_names)}"""
 
             # creates  dataframe from query results (automatically drops connection)
             with psycopg2.connect(host=DB_HOST, user=DB_USER, password=DB_PWD) as connection:
@@ -112,7 +113,7 @@ def match_guests():
             wrangled_df = wrangle(df)
 
             # create match column
-            match_df = find_matches(wrangled_df, request_body, req_last_names)
+            match_df = find_matches(wrangled_df, request_body)
 
             # create dataframes for complete and partial matches
             df_true = match_df[match_df['match'] == True].drop(columns='match')
