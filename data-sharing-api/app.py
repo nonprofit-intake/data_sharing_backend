@@ -103,6 +103,7 @@ def match_guests():
             lowered_last_names = [name.lower() for name in request_body['last_name']]
             request_body["last_name"] = lowered_last_names
             
+            # define query based on length of last name list
             if len(lowered_last_names) == 1:
                 query = f"""SELECT ssn, enroll_date, exit_date, exit_destination, first_name, income_at_entry, income_at_exit, last_name
                             FROM guestsdev 
