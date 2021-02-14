@@ -9,7 +9,6 @@ from cryptography.fernet import Fernet
 
 # initialize Chalice app
 app = Chalice(app_name='data-sharing-api')
-# app.debug = True # ONLY FOR DEVELOPMENT
 
 # initialize Fernet suite
 encryption_key = str.encode(os.environ["ENCRYPTION_KEY"])
@@ -20,7 +19,6 @@ DB_HOST = os.environ['DB_HOST']
 DB_USER = os.environ['DB_USER']
 DB_PWD = os.environ['DB_PWD']
 WEB_PWD = os.environ['WEB_PWD']
-ENCRYPTION_KEY = str.encode(os.environ["ENCRYPTION_KEY"])
 
 # helper functions
 def decipher(cipher_string):
