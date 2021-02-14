@@ -142,18 +142,18 @@ def match_guests():
             wrangled_df = wrangle(df)
 
             # create match column
-            match_df = find_matches(wrangled_df, request_body)
+            full_matches, partial_matches = find_matches(wrangled_df, request_body)
 
             # create dataframes for complete and partial matches
-            df_true = match_df[match_df['match'] == True].drop(columns='match')
-            df_false = match_df[match_df['match'] == False].drop(columns='match')
+            # df_true = match_df[match_df['match'] == True].drop(columns='match')
+            # df_false = match_df[match_df['match'] == False].drop(columns='match')
         
             # convert dataframes to JSON format and send as response
-            res_true = df_true.to_json(orient="records")
-            res_false = df_false.to_json(orient="records")
+            # res_true = df_true.to_json(orient="records")
+            # res_false = df_false.to_json(orient="records")
             
-            raw_response = {'all_full_matches': json.loads(res_true),
-                'all_partial_matches': json.loads(res_false)}
+            raw_response = {'all_full_matches': json.loads(full_matches),
+                'all_partial_matches': json.loads(partial_matches)}
             
             dumped_response = json.dumps(raw_response)
             final_response = json.loads(dumped_response)
