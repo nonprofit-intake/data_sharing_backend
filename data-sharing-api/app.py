@@ -42,27 +42,6 @@ def wrangle(df):
 
     return wrangled_df
 
-# def find_matches(df, request_body):
-#     """
-#     Find last names in query dataframe that match request_body last names.
-#     If it's a match for the last name, check that it's a match for SSN.
-#     """
-#     match_df = df.copy()
-
-#     # drop records where ssn is nan
-#     match_df.dropna(subset=['ssn'], inplace=True)
-#     match_df['match'] = False
-    
-#     # if record data is equal to request value, set match value equal to true
-#     for i, req_last_name in enumerate(request_body['last_name']):
-#         for j, row_last_name in enumerate(match_df['last_name']):
-#                 if row_last_name == req_last_name and request_body['ssn'][i] == match_df['ssn'].iloc[j]:
-#                     match_df['match'].iloc[j] = True
-        
-#     match_df.drop(columns='ssn', inplace=True)
-
-#     return match_df
-
 def find_matches(df, request_body):
     """
     Assumes all records in input dataframe are partial matches until matched.
@@ -92,6 +71,7 @@ def find_matches(df, request_body):
     pm_json = all_partial_matches.to_json(orient="records")
 
     return fm_json, pm_json
+
 
 # routes
 @app.route('/')
@@ -141,17 +121,9 @@ def match_guests():
             # wrangle data for matching
             wrangled_df = wrangle(df)
 
-            # create match column
+            # retrieve full and partial matching dataframes
             full_matches, partial_matches = find_matches(wrangled_df, request_body)
 
-            # create dataframes for complete and partial matches
-            # df_true = match_df[match_df['match'] == True].drop(columns='match')
-            # df_false = match_df[match_df['match'] == False].drop(columns='match')
-        
-            # convert dataframes to JSON format and send as response
-            # res_true = df_true.to_json(orient="records")
-            # res_false = df_false.to_json(orient="records")
-            
             raw_response = {'all_full_matches': json.loads(full_matches),
                 'all_partial_matches': json.loads(partial_matches)}
             
