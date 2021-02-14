@@ -121,11 +121,18 @@ def match_guests():
             # wrangle data for matching
             wrangled_df = wrangle(df)
 
+            # find last_names not found in database
+            table_last_names = wrangled_df['last_name'].unique()
+            no_match_found = list(set(lowered_last_names) - set(table_last_names))
+
             # retrieve full and partial matching dataframes
             full_matches, partial_matches = find_matches(wrangled_df, request_body)
 
-            raw_response = {'all_full_matches': json.loads(full_matches),
-                'all_partial_matches': json.loads(partial_matches)}
+            raw_response = {
+                'all_full_matches': json.loads(full_matches),
+                'all_partial_matches': json.loads(partial_matches),
+                'no_match_found': no_match_found,
+                }
             
             dumped_response = json.dumps(raw_response)
             final_response = json.loads(dumped_response)
