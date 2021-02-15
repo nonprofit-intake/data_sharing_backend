@@ -98,24 +98,24 @@ Content-Type: application/json
 {
     "full_matches": [
         {
+            "first_name": "john",
+            "last_name": "brown"
             "enroll_date": "10-22-2018",
             "exit_date": "10-25-2018",
             "exit_destination": "Rental by client, other ongoing housing subsidy",
-            "first_name": "john",
             "income_at_entry": 1234.0,
             "income_at_exit": 2234.0,
-            "last_name": "brown"
         }
     ],
    "partial_matches": [
        {
+           "first_name": "james",
+           "last_name": "smith"
            "enroll_date": "10-22-2018",
            "exit_date": "10-25-2018",
            "exit_destination": "Rental by client, no ongoing housing subsidy",
-           "first_name": "james",
            "income_at_entry": 1234.0,
            "income_at_exit": 2234.0,
-           "last_name": "smith"
         }
     ],
     "no_match_found": [
