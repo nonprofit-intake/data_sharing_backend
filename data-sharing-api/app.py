@@ -80,63 +80,63 @@ def index():
 @app.route('/guests', methods=['POST'])
 def match_guests():
     request_body = app.current_request.json_body
-    if request_body:
-        try:
-            assert isinstance(request_body["pwd"], str), "'pwd' must be a string type"
-            assert request_body["pwd"] == WEB_PWD, "Incorrect password"
-            assert isinstance(request_body, dict), "JSON object must be a dictionary"
-            assert "last_name" in request_body.keys(), "Input JSON object requires last_name key"
-            assert "ssn" in request_body.keys(), "Input JSON object requires ssn key"
-            assert isinstance(request_body["last_name"], list), "'last_name' key must contain a list"
-            assert isinstance(request_body["ssn"], list), "'snn' key must contain a list"
-            assert len(request_body["last_name"]) == len(request_body["ssn"]), "ValueError: 'last_name' and 'ssn' lists must be of equal length"
-            assert request_body["last_name"], "'last_name' key must not be an empty list"
-            assert request_body["ssn"], "'ssn' key must not be an empty list"
-            assert all(isinstance(last_name, str) for last_name in request_body["last_name"]), "'last_name' values must all be of type string"
-            assert all(isinstance(ssn, int) for ssn in request_body["ssn"]), "'ssn' values must be integers"
 
-        except AssertionError as error:
-            raise BadRequestError(str(error))
+    # convert all request names to lowercase; last names in database are lowercase
+    lowered_last_names = [name.lower() for name in request_body['last_name']]
+    request_body["last_name"] = lowered_last_names
 
-        try:
-            # convert all request names to lowercase; last names in database are lowercase
-            lowered_last_names = [name.lower() for name in request_body['last_name']]
-            request_body["last_name"] = lowered_last_names
-            
-            # define query based on length of last name list
-            if len(lowered_last_names) == 1:
-                query = f"""SELECT ssn, enroll_date, exit_date, exit_destination, first_name, income_at_entry, income_at_exit, last_name
-                            FROM guestsdev 
-                            WHERE last_name='{lowered_last_names[0]}'"""
-            else:
-                query = f"""SELECT ssn, enroll_date, exit_date, exit_destination, first_name, income_at_entry, income_at_exit, last_name 
-                            FROM guestsdev 
-                            WHERE last_name IN {tuple(lowered_last_names)}"""
+    try:
+        assert isinstance(request_body["pwd"], str), "'pwd' must be a string type"
+        assert request_body["pwd"] == WEB_PWD, "Incorrect password"
+        assert isinstance(request_body, dict), "JSON object must be a dictionary"
+        assert "last_name" in request_body.keys(), "Input JSON object requires last_name key"
+        assert "ssn" in request_body.keys(), "Input JSON object requires ssn key"
+        assert isinstance(request_body["last_name"], list), "'last_name' key must contain a list"
+        assert isinstance(request_body["ssn"], list), "'snn' key must contain a list"
+        assert len(request_body["last_name"]) == len(request_body["ssn"]), "ValueError: 'last_name' and 'ssn' lists must be of equal length"
+        assert request_body["last_name"], "'last_name' key must not be an empty list"
+        assert request_body["ssn"], "'ssn' key must not be an empty list"
+        assert all(isinstance(last_name, str) for last_name in request_body["last_name"]), "'last_name' values must all be of type string"
+        assert all(isinstance(ssn, int) for ssn in request_body["ssn"]), "'ssn' values must be integers"
 
-            # creates  dataframe from query results (automatically drops connection)
-            with psycopg2.connect(host=DB_HOST, user=DB_USER, password=DB_PWD) as connection:
-                df = pd.read_sql_query(query, connection)
+    except AssertionError as error:
+        raise BadRequestError(str(error))
 
-            # wrangle data for matching
-            wrangled_df = wrangle(df)
+    try:
+        # define query based on length of last name list
+        if len(lowered_last_names) == 1:
+            where_clause = f"WHERE last_name='{lowered_last_names[0]}'"
+        else:
+            where_clause = f"WHERE last_name IN {tuple(lowered_last_names)}"
 
-            # find last_names not found in database
-            table_last_names = wrangled_df['last_name'].unique()
-            no_match_found = list(set(lowered_last_names) - set(table_last_names))
+        query = f"""SELECT first_name, last_name, ssn, enroll_date, exit_date, exit_destination, income_at_entry, income_at_exit 
+                    FROM guestsdev 
+                    {where_clause}"""
 
-            # retrieve full and partial matching dataframes
-            full_matches, partial_matches = find_matches(wrangled_df, request_body)
+        # creates dataframe from query results (automatically drops connection)
+        with psycopg2.connect(host=DB_HOST, user=DB_USER, password=DB_PWD) as connection:
+            df = pd.read_sql_query(query, connection)
 
-            raw_response = {
-                'all_full_matches': json.loads(full_matches),
-                'all_partial_matches': json.loads(partial_matches),
-                'no_match_found': no_match_found,
-                }
-            
-            dumped_response = json.dumps(raw_response)
-            final_response = json.loads(dumped_response)
-            
-            return final_response
+        # wrangle data for matching
+        wrangled_df = wrangle(df)
 
-        except (Exception, psycopg2.Error) as error:
-            raise BadRequestError(str(error))
+        # find last_names not found in database
+        table_last_names = wrangled_df['last_name'].unique()
+        no_match_found = list(set(lowered_last_names) - set(table_last_names))
+
+        # retrieve full and partial matching dataframes
+        full_matches, partial_matches = find_matches(wrangled_df, request_body)
+
+        raw_response = {
+            'full_matches': json.loads(full_matches),
+            'partial_matches': json.loads(partial_matches),
+            'no_match_found': no_match_found,
+            }
+        
+        dumped_response = json.dumps(raw_response)
+        final_response = json.loads(dumped_response)
+        
+        return final_response
+
+    except (Exception, psycopg2.Error) as error:
+        raise BadRequestError(str(error))
