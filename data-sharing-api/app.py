@@ -1,6 +1,5 @@
 import os
 import json
-# import math
 import pandas as pd
 import psycopg2
 from chalice import Chalice, BadRequestError
