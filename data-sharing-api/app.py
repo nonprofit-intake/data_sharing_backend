@@ -32,7 +32,7 @@ def wrangle(df):
     wrangled_df = df.copy()
     
     # decipher SSNs
-    wrangled_df['ssn'] = wrangled_df['ssn'].apply(lambda row_value: decipher(row_value) if pd.notnull(row_value) else math.nan)
+    wrangled_df['ssn'] = wrangled_df['ssn'].apply(lambda row_value: int(decipher(row_value)) if pd.notnull(row_value) else math.nan)
 
     # format date strings for readability
     wrangled_df['enroll_date'] = wrangled_df['enroll_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
@@ -93,7 +93,7 @@ def match_guests():
             assert request_body["last_name"], "'last_name' key must not be an empty list"
             assert request_body["ssn"], "'ssn' key must not be an empty list"
             assert all(isinstance(last_name, str) for last_name in request_body["last_name"]), "'last_name' values must all be of type string"
-            assert all(isinstance(ssn, str) for ssn in request_body["ssn"]), "'ssn' values must all be of type string"
+            assert all(isinstance(ssn, int) for ssn in request_body["ssn"]), "'ssn' values must be integers"
 
         except AssertionError as error:
             raise BadRequestError(str(error))
