@@ -24,7 +24,7 @@ def index():
 def match_guests():
     request_body = app.current_request.json_body
 
-    # convert all request names to lowercase; last names in database are lowercase
+    # convert all request names to lowercase
     lowered_last_names = [name.lower() for name in request_body['last_name']]
     request_body["last_name"] = lowered_last_names
 
@@ -48,18 +48,19 @@ def match_guests():
     try:
         # define query based on length of last name list
         if len(lowered_last_names) == 1:
-            where_clause = f"WHERE last_name='{lowered_last_names[0]}'"
+            where_clause = f"WHERE LOWER(last_name)='{lowered_last_names[0]}'"
         else:
-            where_clause = f"WHERE last_name IN {tuple(lowered_last_names)}"
+            where_clause = f"WHERE LOWER(last_name) IN {tuple(lowered_last_names)}"
 
-        query = f"""SELECT first_name, last_name, ssn, enroll_date, exit_date, exit_destination, income_at_entry, income_at_exit 
-                    FROM guestsdev 
+        query = f"""SELECT LOWER(first_name) as first_name, LOWER(last_name) as last_name, ssn, enroll_date, exit_date, exit_destination, income_at_entry, income_at_exit 
+                    FROM guests
                     {where_clause}"""
 
         # creates dataframe from query results (automatically drops connection)
         with psycopg2.connect(host=DB_HOST, user=DB_USER, password=DB_PWD) as connection:
             df = pd.read_sql_query(query, connection)
 
+        print(df.shape)
         # wrangle data for matching
         wrangled_df = helpers.wrangle(df)
 
