@@ -1,18 +1,13 @@
 import os
 import json
-import math
+# import math
 import pandas as pd
 import psycopg2
-import cryptography
 from chalice import Chalice, BadRequestError
-from cryptography.fernet import Fernet
+from chalicelib import helpers
 
 # initialize Chalice app
 app = Chalice(app_name='data-sharing-api')
-
-# initialize Fernet suite
-encryption_key = str.encode(os.environ["ENCRYPTION_KEY"])
-fernet = Fernet(encryption_key)
 
 # assign environment variables
 DB_HOST = os.environ['DB_HOST']
@@ -20,58 +15,7 @@ DB_USER = os.environ['DB_USER']
 DB_PWD = os.environ['DB_PWD']
 WEB_PWD = os.environ['WEB_PWD']
 
-# helper functions
-def decipher(cipher_string):
-    deciphered_string = fernet.decrypt(str.encode(cipher_string)).decode("utf-8")
-    return deciphered_string
 
-def wrangle(df):
-    """
-    Wrangles data for use in matching function.
-    """
-    wrangled_df = df.copy()
-    
-    # decipher SSNs
-    wrangled_df['ssn'] = wrangled_df['ssn'].apply(lambda row_value: int(decipher(row_value)) if pd.notnull(row_value) else math.nan)
-
-    # format date strings for readability
-    wrangled_df['enroll_date'] = wrangled_df['enroll_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
-    wrangled_df['exit_date'] = wrangled_df['exit_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
-
-    return wrangled_df
-
-def find_matches(df, request_body):
-    """
-    Assumes all records in input dataframe are partial matches until matched.
-    Compares request body and input dataframe for matching last_name and SSN.
-    Returns two dataframes in JSON format: full and partial matches.
-    """
-    guest_data = tuple(zip(request_body["last_name"], request_body["ssn"]))
-
-    full_match_dfs = []
-    all_partial_matches = df.copy()
-
-    for last_name, ssn in guest_data:
-        if ((all_partial_matches["last_name"] == last_name) & (all_partial_matches["ssn"] == ssn)).any():
-            full_match = df[(df["last_name"] == last_name) & (df["ssn"] == ssn)]
-            full_match_dfs.append(full_match)
-            
-            all_partial_matches.drop(full_match.index, inplace=True)
-
-    all_full_matches = pd.concat(full_match_dfs)
-
-    # drop ssn columns
-    all_full_matches.drop(columns='ssn', inplace=True)
-    all_partial_matches.drop(columns='ssn', inplace=True)
-
-    # convert datfarames to JSON format
-    fm_json = all_full_matches.to_json(orient="records")
-    pm_json = all_partial_matches.to_json(orient="records")
-
-    return fm_json, pm_json
-
-
-# routes
 @app.route('/')
 def index():
     return {'Status': 'OK'}
@@ -118,14 +62,14 @@ def match_guests():
             df = pd.read_sql_query(query, connection)
 
         # wrangle data for matching
-        wrangled_df = wrangle(df)
+        wrangled_df = helpers.wrangle(df)
 
         # find last_names not found in database
         table_last_names = wrangled_df['last_name'].unique()
         no_match_found = list(set(lowered_last_names) - set(table_last_names))
 
         # retrieve full and partial matching dataframes
-        full_matches, partial_matches = find_matches(wrangled_df, request_body)
+        full_matches, partial_matches = helpers.find_matches(wrangled_df, request_body)
 
         raw_response = {
             'full_matches': json.loads(full_matches),
