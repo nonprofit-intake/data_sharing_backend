@@ -66,14 +66,14 @@ Request environment variables from your Family Promise supersvisor.
 ## Route Overview
 
 **API URL**:
-https://3yk0fzdvdh.execute-api.us-east-1.amazonaws.com/
+`https://z0arg6enmk.execute-api.us-east-1.amazonaws.com/api/`
 
 ### Return guest information
 
 Returns limited information about guests that are found in our databases. Response return both full matches (last name and ssn match) and partial matches (last name matches only) as well as last names from the request that were not found in our databases.
 
 #### Request
-`POST /api/guests`
+`POST /guests`
 ```
 {
     "last_name": [
