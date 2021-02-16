@@ -5,10 +5,10 @@ Avista Utilities wants to know if customers that have fallen behind on payments 
 **Solution**: We designed an API that uses unique identifiers to determine if a previous customer began receiving services from organizations assisting people experiencing homelessness. At the moment, the API only queries from the Family Promise of Spokane database. We are looking to expand to this service to other shelters and service providers.
 
 ## Tech Stack
-**Languages**: Python, SQL
-**Dependencies**: Pandas, cryptography, psycopg2
-**AWS**: Chalice, Lambda, API Gateway
-**Services**: ElephantSQL 
+**Languages**: Python, SQL  
+**Dependencies**: Pandas, cryptography, psycopg2  
+**AWS**: Chalice, Lambda, API Gateway  
+**Services**: ElephantSQL  
 
 ## Architecture
 ![Non-technical Diagram](./diagrams/non-tech-diagram.png)
@@ -25,7 +25,7 @@ Avista Utilities wants to know if customers that have fallen behind on payments 
 `pipenv install`
 
 #### Configure environment variables in `~/.chalice/config.json`
-Request environment variables from your Family Promise supersvisor.
+Request environment variables from your Family Promise IT/Data Systems Manager.
 ```
 {
     "version": "2.0",
@@ -46,7 +46,7 @@ Request environment variables from your Family Promise supersvisor.
 ```
 
 #### Begin local development
-`cd fernet-api`
+`cd fernet-api`  
 `chalice local`
 
 #### Before deployment, AWS credentials must be configured
@@ -58,7 +58,7 @@ Request environment variables from your Family Promise supersvisor.
       aws_secret_access_key=<your-secret-access-key>
       region=<your-region>
       ```
-    - More details here: [AWS Command Line Interface](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html)
+   - More details here: [AWS Command Line Interface](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html)
 
 #### With AWS credentials in place, begin deployment process
 `chalice deploy`
