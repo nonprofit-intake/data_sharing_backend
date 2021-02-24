@@ -61,7 +61,7 @@ Request environment variables from your Family Promise IT/Data Systems Manager.
 `cd data-sharing-api`  
 `chalice local`
 
-#### Before deployment, AWS credentials must be configured
+#### If you want to deploy this service, AWS credentials must be configured first
    - If AWS CLI has already been configured you can skip this step
    - Else credentials can be usually configured at `~/.aws/config` with this content:
       ```
@@ -72,7 +72,11 @@ Request environment variables from your Family Promise IT/Data Systems Manager.
       ```
    - More details here: [AWS Command Line Interface](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html)
 
-#### With AWS credentials in place, begin deployment process
+At this point you should be able to send HTTP requests locally to http://localhost:8000/. To exit the local development server use the command `CTRL+C`. 
+
+In this directory you can also run the tests found in `/tests/test_app.py` by using the command `pytest -v`.
+
+#### Once configured, deploy web service
 `chalice deploy`
 
 ## Route Overview
