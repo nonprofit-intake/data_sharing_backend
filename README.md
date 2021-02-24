@@ -18,6 +18,18 @@ Avista Utilities wants to know if customers that have fallen behind on payments 
 ![Architecture Diagram](./diagrams/fampromarch.png)
 
 ## Development
+#### Before starting, make sure you have Python and pip installed
+`python --version`  
+`pip --version`
+
+If you do not have Python, install latest 3.x version: 
+- Official source: [python.org](https://www.python.org/)
+- [Installing Python](http://docs.python-guide.org/en/latest/starting/installation/) section of _The Hitchhiker’s Guide to Python_
+- Usually you will already have pip on your system or it will be included with your Python installation, otherwise: [install pip](https://pip.pypa.io/en/stable/installing/)
+
+#### Install Pipenv packaging tool
+`pip install --user pipenv`
+
 #### Clone repository and initialize a virtual environment
 `pipenv shell`
 
@@ -46,7 +58,7 @@ Request environment variables from your Family Promise IT/Data Systems Manager.
 ```
 
 #### Begin local development
-`cd fernet-api`  
+`cd data-sharing-api`  
 `chalice local`
 
 #### Before deployment, AWS credentials must be configured
