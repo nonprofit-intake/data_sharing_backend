@@ -208,7 +208,15 @@ Status: 400 Bad Request
 ```
 Status: 503 Unavailable
 
-{"Message": "Service unavailable at the moment, a request has been made to resolve this issue. Please try again in 5 minutes. If it continues to be unavailable, please reach out to your Family Promise representative"}
+{
+    "Message": "Service unavailable at the moment, a request has been made to resolve this issue. Please try again in 5 minutes. If it continues to be unavailable, please reach out to your Family Promise representative"}
+```
+```
+Status: 500 Internal Service Error
+
+{
+  "Message": "Service currently unavailable. Please contact your Family Promise representative"
+}
 ```
 
 ## License
