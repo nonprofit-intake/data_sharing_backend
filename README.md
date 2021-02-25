@@ -170,7 +170,7 @@ Status: 400 Bad Request
 
 {
   "Code": "BadRequestError",
-  "Message": "BadRequestError: ValueError: 'last_name' and 'ssn' lists must be of equal length"
+  "Message": "BadRequestError: 'last_name' and 'ssn' key values must be of type list"
 }
 ```
 ```
@@ -178,7 +178,7 @@ Status: 400 Bad Request
 
 {
   "Code": "BadRequestError",
-  "Message": "BadRequestError: ValueError: 'last_name' and 'ssn' lists must be of equal length"
+  "Message": "BadRequestError: 'last_name' and 'ssn' lists must be of equal length"
 }
 ```
 ```
@@ -186,7 +186,7 @@ Status: 400 Bad Request
 
 {
   "Code": "BadRequestError",
-  "Message": "BadRequestError: ValueError: 'last_name' and 'ssn' lists must be of equal length"
+  "Message": "BadRequestError: 'last_name' and 'ssn' lists must have at least one entry"
 }
 ```
 ```
@@ -194,7 +194,7 @@ Status: 400 Bad Request
 
 {
   "Code": "BadRequestError",
-  "Message": "BadRequestError: ValueError: 'last_name' and 'ssn' lists must be of equal length"
+  "Message": "BadRequestError: 'ssn' values must all be of type integer"
 }
 ```
 ```
@@ -202,26 +202,9 @@ Status: 400 Bad Request
 
 {
   "Code": "BadRequestError",
-  "Message": "BadRequestError: ValueError: 'last_name' and 'ssn' lists must be of equal length"
+  "Message": "BadRequestError: 'last_name' values must all be of type string"
 }
 ```
-```
-Status: 400 Bad Request
-
-{
-  "Code": "BadRequestError",
-  "Message": "BadRequestError: ValueError: 'last_name' and 'ssn' lists must be of equal length"
-}
-```
-```
-Status: 400 Bad Request
-
-{
-  "Code": "BadRequestError",
-  "Message": "BadRequestError: ValueError: 'last_name' and 'ssn' lists must be of equal length"
-}
-```
-
 ```
 Status: 503 Unavailable
 

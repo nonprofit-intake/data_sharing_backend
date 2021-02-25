@@ -2,7 +2,7 @@ import os
 import json
 import pandas as pd
 import psycopg2
-from chalice import Chalice, BadRequestError, Response
+from chalice import Chalice, BadRequestError, ChaliceViewError, Response
 from chalicelib import helpers
 
 # initialize Chalice app
@@ -29,13 +29,13 @@ def match_guests():
         assert "ssn" in request_body.keys(), "Request JSON object requires 'last_name', 'ssn', and 'pwd' keys"
         assert "pwd" in request_body.keys(), "Request JSON object requires 'last_name', 'ssn', and 'pwd' keys"
         assert request_body["pwd"] == WEB_PWD, "Invalid password"
-        assert isinstance(request_body["last_name"], list), "'last_name' key must contain a list"
-        assert isinstance(request_body["ssn"], list), "'snn' key must contain a list"
-        assert len(request_body["last_name"]) == len(request_body["ssn"]), "ValueError: 'last_name' and 'ssn' lists must be of equal length"
-        assert request_body["last_name"], "'last_name' key must not be an empty list"
-        assert request_body["ssn"], "'ssn' key must not be an empty list"
+        assert isinstance(request_body["last_name"], list), "'last_name' and 'ssn' key values must be of type list"
+        assert isinstance(request_body["ssn"], list), "'last_name' and 'ssn' key values must be of type list"
+        assert len(request_body["last_name"]) == len(request_body["ssn"]), "'last_name' and 'ssn' lists must be of equal length"
+        assert request_body["last_name"], "'last_name' and 'ssn' lists must have at least one entry"
+        assert request_body["ssn"], "'last_name' and 'ssn' lists must have at least one entry"
         assert all(isinstance(last_name, str) for last_name in request_body["last_name"]), "'last_name' values must all be of type string"
-        assert all(isinstance(ssn, int) for ssn in request_body["ssn"]), "'ssn' values must be integers"
+        assert all(isinstance(ssn, int) for ssn in request_body["ssn"]), "'ssn' values must all be of type integer"
 
     except AssertionError as error:
         raise BadRequestError(str(error))
@@ -67,7 +67,8 @@ def match_guests():
                 body=wrangle_result, 
                 headers={
                     "Content-Type": "application/json",
-                    "Retry-After": "300"}, 
+                    "Retry-After": "300"
+                }, 
                 status_code=503
             )
 
@@ -90,4 +91,8 @@ def match_guests():
         return final_response
 
     except (Exception, psycopg2.Error) as error:
-        raise BadRequestError(str(error))
+        return Response(
+            body={"Message": "Service currently unavailable. Please contact your Family Promise representative"},
+            headers={'Content-Type': "application/json"},
+            status_code=500
+        )
