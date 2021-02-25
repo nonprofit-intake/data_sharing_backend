@@ -1,6 +1,7 @@
 import os
 import math
 import pandas as pd
+import requests
 from cryptography.fernet import Fernet
 from chalice import Response
 
@@ -28,6 +29,8 @@ def wrangle(df):
         
         return wrangled_df
     except:
+        requests.get("https://bvj8xrnwwd.execute-api.us-east-1.amazonaws.com/api/encrypt-pii")
+
         response_body = {"Message": "Service unavailable at the moment, a request has been made to resolve this issue. Please try again in 5 minutes. If it continues to be unavailable, please reach out to your Family Promise representative"}
 
         return response_body
