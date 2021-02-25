@@ -23,17 +23,12 @@ def index():
 @app.route('/guests', methods=['POST'])
 def match_guests():
     request_body = app.current_request.json_body
-
-    # convert all request names to lowercase
-    lowered_last_names = [name.lower() for name in request_body['last_name']]
-    request_body["last_name"] = lowered_last_names
-
     try:
-        assert isinstance(request_body["pwd"], str), "'pwd' must be a string type"
-        assert request_body["pwd"] == WEB_PWD, "Incorrect password"
         assert isinstance(request_body, dict), "JSON object must be a dictionary"
-        assert "last_name" in request_body.keys(), "Input JSON object requires last_name key"
-        assert "ssn" in request_body.keys(), "Input JSON object requires ssn key"
+        assert "last_name" in request_body.keys(), "Request JSON object requires 'last_name', 'ssn', and 'pwd' keys"
+        assert "ssn" in request_body.keys(), "Request JSON object requires 'last_name', 'ssn', and 'pwd' keys"
+        assert "pwd" in request_body.keys(), "Request JSON object requires 'last_name', 'ssn', and 'pwd' keys"
+        assert request_body["pwd"] == WEB_PWD, "Invalid password"
         assert isinstance(request_body["last_name"], list), "'last_name' key must contain a list"
         assert isinstance(request_body["ssn"], list), "'snn' key must contain a list"
         assert len(request_body["last_name"]) == len(request_body["ssn"]), "ValueError: 'last_name' and 'ssn' lists must be of equal length"
@@ -46,6 +41,10 @@ def match_guests():
         raise BadRequestError(str(error))
 
     try:
+        # convert all request names to lowercase
+        lowered_last_names = [name.lower() for name in request_body['last_name']]
+        request_body["last_name"] = lowered_last_names
+
         # define query based on length of last name list
         if len(lowered_last_names) == 1:
             where_clause = f"WHERE LOWER(last_name)='{lowered_last_names[0]}'"

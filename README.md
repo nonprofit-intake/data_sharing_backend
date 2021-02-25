@@ -106,7 +106,7 @@ Returns limited information about guests that are found in our databases. Respon
 }
 ```
 
-#### Response
+#### Success Responses
 ```
 Status: 200 OK
 Content-Type: application/json
@@ -138,6 +138,94 @@ Content-Type: application/json
         "wilson"
     ]
 }
+```
+
+#### Error Responses
+```
+Status: 400 Bad Request
+
+{
+  "Code": "BadRequestError",
+  "Message": "BadRequestError: JSON object must be a dictionary"
+}
+```
+```
+Status: 400 Bad Request
+
+{
+  "Code": "BadRequestError",
+  "Message": "BadRequestError: Request JSON object requires 'last_name', 'ssn', and 'pwd' keys"
+}
+```
+```
+Status: 400 Bad Request
+
+{
+  "Code": "BadRequestError",
+  "Message": "BadRequestError: Invalid password"
+}
+```
+```
+Status: 400 Bad Request
+
+{
+  "Code": "BadRequestError",
+  "Message": "BadRequestError: ValueError: 'last_name' and 'ssn' lists must be of equal length"
+}
+```
+```
+Status: 400 Bad Request
+
+{
+  "Code": "BadRequestError",
+  "Message": "BadRequestError: ValueError: 'last_name' and 'ssn' lists must be of equal length"
+}
+```
+```
+Status: 400 Bad Request
+
+{
+  "Code": "BadRequestError",
+  "Message": "BadRequestError: ValueError: 'last_name' and 'ssn' lists must be of equal length"
+}
+```
+```
+Status: 400 Bad Request
+
+{
+  "Code": "BadRequestError",
+  "Message": "BadRequestError: ValueError: 'last_name' and 'ssn' lists must be of equal length"
+}
+```
+```
+Status: 400 Bad Request
+
+{
+  "Code": "BadRequestError",
+  "Message": "BadRequestError: ValueError: 'last_name' and 'ssn' lists must be of equal length"
+}
+```
+```
+Status: 400 Bad Request
+
+{
+  "Code": "BadRequestError",
+  "Message": "BadRequestError: ValueError: 'last_name' and 'ssn' lists must be of equal length"
+}
+```
+```
+Status: 400 Bad Request
+
+{
+  "Code": "BadRequestError",
+  "Message": "BadRequestError: ValueError: 'last_name' and 'ssn' lists must be of equal length"
+}
+```
+
+```
+Status: 503 Unavailable
+
+{"Message": "Service unavailable at the moment, a request has been made to resolve this issue. Please try again in 5 minutes. If it continues to be unavailable, please reach out to your Family Promise representative"}
 ```
 
 ## License
