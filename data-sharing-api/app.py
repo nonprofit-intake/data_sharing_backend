@@ -2,7 +2,7 @@ import os
 import json
 import pandas as pd
 import psycopg2
-from chalice import Chalice, BadRequestError
+from chalice import Chalice, BadRequestError, Response
 from chalicelib import helpers
 
 # initialize Chalice app
@@ -60,16 +60,24 @@ def match_guests():
         with psycopg2.connect(host=DB_HOST, user=DB_USER, password=DB_PWD) as connection:
             df = pd.read_sql_query(query, connection)
 
-        print(df.shape)
         # wrangle data for matching
-        wrangled_df = helpers.wrangle(df)
+        wrangle_result = helpers.wrangle(df)
+
+        if type(wrangle_result) == dict:
+            return Response(
+                body=wrangle_result, 
+                headers={
+                    "Content-Type": "application/json",
+                    "Retry-After": "300"}, 
+                status_code=503
+            )
 
         # find last_names not found in database
-        table_last_names = wrangled_df['last_name'].unique()
+        table_last_names = wrangle_result['last_name'].unique()
         no_match_found = list(set(lowered_last_names) - set(table_last_names))
 
         # retrieve full and partial matching dataframes
-        full_matches, partial_matches = helpers.find_matches(wrangled_df, request_body)
+        full_matches, partial_matches = helpers.find_matches(wrangle_result, request_body)
 
         raw_response = {
             'full_matches': json.loads(full_matches),

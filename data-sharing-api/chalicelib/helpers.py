@@ -2,6 +2,7 @@ import os
 import math
 import pandas as pd
 from cryptography.fernet import Fernet
+from chalice import Response
 
 # initialize Fernet suite
 encryption_key = str.encode(os.environ["ENCRYPTION_KEY"])
@@ -16,15 +17,21 @@ def wrangle(df):
     Wrangles data for use in matching function.
     """
     wrangled_df = df.copy()
-    
-    # decipher SSNs
-    wrangled_df['ssn'] = wrangled_df['ssn'].apply(lambda row_value: int(decipher(row_value)) if pd.notnull(row_value) else math.nan)
 
-    # format date strings for readability
-    wrangled_df['enroll_date'] = wrangled_df['enroll_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
-    wrangled_df['exit_date'] = wrangled_df['exit_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
+    try:
+        # decipher SSNs
+        wrangled_df['ssn'] = wrangled_df['ssn'].apply(lambda row_value: int(decipher(row_value)) if pd.notnull(row_value) else math.nan)
 
-    return wrangled_df
+        # format date strings for readability
+        wrangled_df['enroll_date'] = wrangled_df['enroll_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
+        wrangled_df['exit_date'] = wrangled_df['exit_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
+        
+        return wrangled_df
+    except:
+        response_body = {"Message": "Service unavailable at the moment, a request has been made to resolve this issue. Please try again in 5 minutes. If it continues to be unavailable, please reach out to your Family Promise representative"}
+
+        return response_body
+
 
 def find_matches(df, request_body):
     """
