@@ -92,7 +92,7 @@ def match_guests():
 
     except (Exception, psycopg2.Error) as error:
         return Response(
-            body={"Message": "Service currently unavailable. Please contact your Family Promise representative"},
+            body={"Message": "Service currently unavailable. Please contact project maintainers"},
             headers={'Content-Type': "application/json"},
             status_code=500
         )
