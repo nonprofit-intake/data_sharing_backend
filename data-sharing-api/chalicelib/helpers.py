@@ -31,7 +31,10 @@ def wrangle(df):
     except:
         requests.get("https://bvj8xrnwwd.execute-api.us-east-1.amazonaws.com/api/encrypt-pii")
 
-        response_body = {"Message": "Service unavailable at the moment, a request has been made to resolve this issue. Please try again in 5 minutes. If it continues to be unavailable, please reach out to your Family Promise representative"}
+        response_body = {
+            "Message": """Service unavailable at the moment, a request has been made to resolve this issue. 
+                        Please try again in 5 minutes."""
+        }
 
         return response_body
 

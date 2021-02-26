@@ -20,7 +20,7 @@ def index():
     return {'Status': 'OK'}
 
 
-@app.route('/guests', methods=['POST'])
+@app.route('/guests', methods=['POST'], cors=True)
 def match_guests():
     request_body = app.current_request.json_body
     try:
