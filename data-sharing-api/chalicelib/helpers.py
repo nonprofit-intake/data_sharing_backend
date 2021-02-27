@@ -49,6 +49,9 @@ def find_matches(df, request_body):
 
     full_match_dfs = []
     all_partial_matches = df.copy()
+    
+    if all_partial_matches.empty:
+        return [],[]
 
     for last_name, ssn in guest_data:
         if ((all_partial_matches["last_name"] == last_name) & (all_partial_matches["ssn"] == ssn)).any():
@@ -57,14 +60,14 @@ def find_matches(df, request_body):
             
             all_partial_matches.drop(full_match.index, inplace=True)
 
-    all_full_matches = pd.concat(full_match_dfs)
+    if full_match_dfs:
+        all_full_matches = pd.concat(full_match_dfs)
+        all_full_matches.drop(columns='ssn', inplace=True)
+        all_full_matches = all_full_matches.to_json(orient="records")
+    else:
+        all_full_matches = []
 
-    # drop ssn columns
-    all_full_matches.drop(columns='ssn', inplace=True)
     all_partial_matches.drop(columns='ssn', inplace=True)
+    all_partial_matches = all_partial_matches.to_json(orient="records")
 
-    # convert datfarames to JSON format
-    fm_json = all_full_matches.to_json(orient="records")
-    pm_json = all_partial_matches.to_json(orient="records")
-
-    return fm_json, pm_json
+    return all_full_matches, all_partial_matches

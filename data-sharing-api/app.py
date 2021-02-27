@@ -7,6 +7,7 @@ from chalicelib import helpers
 
 # initialize Chalice app
 app = Chalice(app_name='data-sharing-api')
+debug=True
 
 # assign environment variables
 DB_HOST = os.environ['DB_HOST']
@@ -79,9 +80,14 @@ def match_guests():
         # retrieve full and partial matching dataframes
         full_matches, partial_matches = helpers.find_matches(wrangle_result, request_body)
 
+        if full_matches:
+            full_matches = json.loads(full_matches)
+        if partial_matches:
+            partial_matches = json.loads(partial_matches)
+
         raw_response = {
-            'full_matches': json.loads(full_matches),
-            'partial_matches': json.loads(partial_matches),
+            'full_matches': full_matches,
+            'partial_matches': partial_matches,
             'no_match_found': no_match_found,
             }
         
@@ -90,7 +96,7 @@ def match_guests():
         
         return final_response
 
-    except (Exception, psycopg2.Error) as error:
+    except psycopg2.Error as error:
         return Response(
             body={"Message": "Service currently unavailable. Please contact project maintainers"},
             headers={'Content-Type': "application/json"},
