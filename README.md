@@ -94,8 +94,8 @@ Returns limited information about guests that are found in our databases. Respon
 {
     "last_name": [
         "smith", 
-        "brown",
-        "wilson",
+        "doe",
+        "johnson",
     ],
     "ssn": [
         1234, 
@@ -115,7 +115,7 @@ Content-Type: application/json
     "full_matches": [
         {
             "first_name": "john",
-            "last_name": "brown"
+            "last_name": "doe"
             "enroll_date": "10-22-2018",
             "exit_date": "10-25-2018",
             "exit_destination": "Rental by client, other ongoing housing subsidy",
@@ -134,8 +134,8 @@ Content-Type: application/json
            "income_at_exit": 2234.0,
         }
     ],
-    "no_match_found": [
-        "wilson"
+    "not_found": [
+        "johnson"
     ]
 }
 ```

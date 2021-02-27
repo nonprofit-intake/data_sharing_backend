@@ -88,7 +88,7 @@ def match_guests():
         raw_response = {
             'full_matches': full_matches,
             'partial_matches': partial_matches,
-            'no_match_found': no_match_found,
+            'not_found': no_match_found,
             }
         
         dumped_response = json.dumps(raw_response)
