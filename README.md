@@ -18,6 +18,18 @@ Avista Utilities wants to know if customers that have fallen behind on payments 
 ![Architecture Diagram](./diagrams/fampromarch.png)
 
 ## Development
+#### Before starting, make sure you have Python and pip installed
+`python --version`  
+`pip --version`
+
+If you do not have Python, install latest 3.x version: 
+- Official source: [python.org](https://www.python.org/)
+- [Installing Python](http://docs.python-guide.org/en/latest/starting/installation/) section of _The Hitchhiker’s Guide to Python_
+- Usually you will already have pip on your system or it will be included with your Python installation, otherwise: [install pip](https://pip.pypa.io/en/stable/installing/)
+
+#### Install Pipenv packaging tool
+`pip install --user pipenv`
+
 #### Clone repository and initialize a virtual environment
 `pipenv shell`
 
@@ -46,10 +58,10 @@ Request environment variables from your Family Promise IT/Data Systems Manager.
 ```
 
 #### Begin local development
-`cd fernet-api`  
+`cd data-sharing-api`  
 `chalice local`
 
-#### Before deployment, AWS credentials must be configured
+#### If you want to deploy this service, AWS credentials must be configured first
    - If AWS CLI has already been configured you can skip this step
    - Else credentials can be usually configured at `~/.aws/config` with this content:
       ```
@@ -60,7 +72,11 @@ Request environment variables from your Family Promise IT/Data Systems Manager.
       ```
    - More details here: [AWS Command Line Interface](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html)
 
-#### With AWS credentials in place, begin deployment process
+At this point you should be able to send HTTP requests locally to http://localhost:8000/. To exit the local development server use the command `CTRL+C`. 
+
+In this directory you can also run the tests found in `/tests/test_app.py` by using the command `pytest -v`.
+
+#### Once configured, deploy web service
 `chalice deploy`
 
 ## Route Overview
@@ -78,8 +94,8 @@ Returns limited information about guests that are found in our databases. Respon
 {
     "last_name": [
         "smith", 
-        "brown",
-        "wilson",
+        "doe",
+        "johnson",
     ],
     "ssn": [
         1234, 
@@ -90,7 +106,7 @@ Returns limited information about guests that are found in our databases. Respon
 }
 ```
 
-#### Response
+#### Success Responses
 ```
 Status: 200 OK
 Content-Type: application/json
@@ -99,7 +115,7 @@ Content-Type: application/json
     "full_matches": [
         {
             "first_name": "john",
-            "last_name": "brown"
+            "last_name": "doe"
             "enroll_date": "10-22-2018",
             "exit_date": "10-25-2018",
             "exit_destination": "Rental by client, other ongoing housing subsidy",
@@ -118,9 +134,88 @@ Content-Type: application/json
            "income_at_exit": 2234.0,
         }
     ],
-    "no_match_found": [
-        "wilson"
+    "not_found": [
+        "johnson"
     ]
+}
+```
+
+#### Error Responses
+```
+Status: 400 Bad Request
+
+{
+  "Code": "BadRequestError",
+  "Message": "BadRequestError: JSON object must be a dictionary"
+}
+```
+```
+Status: 400 Bad Request
+
+{
+  "Code": "BadRequestError",
+  "Message": "BadRequestError: Request JSON object requires 'last_name', 'ssn', and 'pwd' keys"
+}
+```
+```
+Status: 400 Bad Request
+
+{
+  "Code": "BadRequestError",
+  "Message": "BadRequestError: Invalid password"
+}
+```
+```
+Status: 400 Bad Request
+
+{
+  "Code": "BadRequestError",
+  "Message": "BadRequestError: 'last_name' and 'ssn' key values must be of type list"
+}
+```
+```
+Status: 400 Bad Request
+
+{
+  "Code": "BadRequestError",
+  "Message": "BadRequestError: 'last_name' and 'ssn' lists must be of equal length"
+}
+```
+```
+Status: 400 Bad Request
+
+{
+  "Code": "BadRequestError",
+  "Message": "BadRequestError: 'last_name' and 'ssn' lists must have at least one entry"
+}
+```
+```
+Status: 400 Bad Request
+
+{
+  "Code": "BadRequestError",
+  "Message": "BadRequestError: 'ssn' values must all be of type integer"
+}
+```
+```
+Status: 400 Bad Request
+
+{
+  "Code": "BadRequestError",
+  "Message": "BadRequestError: 'last_name' values must all be of type string"
+}
+```
+```
+Status: 503 Unavailable
+
+{
+    "Message": "Service unavailable at the moment, a request has been made to resolve this issue. Please try again in 5 minutes. If it continues to be unavailable, please reach out to your Family Promise representative"}
+```
+```
+Status: 500 Internal Service Error
+
+{
+  "Message": "Service currently unavailable. Please contact your Family Promise representative"
 }
 ```
 

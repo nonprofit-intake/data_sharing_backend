@@ -1,7 +1,9 @@
 import os
 import math
 import pandas as pd
+import requests
 from cryptography.fernet import Fernet
+from chalice import Response
 
 # initialize Fernet suite
 encryption_key = str.encode(os.environ["ENCRYPTION_KEY"])
@@ -16,15 +18,26 @@ def wrangle(df):
     Wrangles data for use in matching function.
     """
     wrangled_df = df.copy()
-    
-    # decipher SSNs
-    wrangled_df['ssn'] = wrangled_df['ssn'].apply(lambda row_value: int(decipher(row_value)) if pd.notnull(row_value) else math.nan)
 
-    # format date strings for readability
-    wrangled_df['enroll_date'] = wrangled_df['enroll_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
-    wrangled_df['exit_date'] = wrangled_df['exit_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
+    try:
+        # decipher SSNs
+        wrangled_df['ssn'] = wrangled_df['ssn'].apply(lambda row_value: int(decipher(row_value)) if pd.notnull(row_value) else math.nan)
 
-    return wrangled_df
+        # format date strings for readability
+        wrangled_df['enroll_date'] = wrangled_df['enroll_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
+        wrangled_df['exit_date'] = wrangled_df['exit_date'].apply(lambda row_value: row_value.strftime("%m-%d-%Y") if pd.notnull(row_value) else math.nan)
+        
+        return wrangled_df
+    except:
+        requests.get("https://bvj8xrnwwd.execute-api.us-east-1.amazonaws.com/api/encrypt-pii")
+
+        response_body = {
+            "Message": """Service unavailable at the moment, a request has been made to resolve this issue. 
+                        Please try again in 5 minutes."""
+        }
+
+        return response_body
+
 
 def find_matches(df, request_body):
     """
@@ -36,6 +49,9 @@ def find_matches(df, request_body):
 
     full_match_dfs = []
     all_partial_matches = df.copy()
+    
+    if all_partial_matches.empty:
+        return [],[]
 
     for last_name, ssn in guest_data:
         if ((all_partial_matches["last_name"] == last_name) & (all_partial_matches["ssn"] == ssn)).any():
@@ -44,14 +60,14 @@ def find_matches(df, request_body):
             
             all_partial_matches.drop(full_match.index, inplace=True)
 
-    all_full_matches = pd.concat(full_match_dfs)
+    if full_match_dfs:
+        all_full_matches = pd.concat(full_match_dfs)
+        all_full_matches.drop(columns='ssn', inplace=True)
+        all_full_matches = all_full_matches.to_json(orient="records")
+    else:
+        all_full_matches = []
 
-    # drop ssn columns
-    all_full_matches.drop(columns='ssn', inplace=True)
     all_partial_matches.drop(columns='ssn', inplace=True)
+    all_partial_matches = all_partial_matches.to_json(orient="records")
 
-    # convert datfarames to JSON format
-    fm_json = all_full_matches.to_json(orient="records")
-    pm_json = all_partial_matches.to_json(orient="records")
-
-    return fm_json, pm_json
+    return all_full_matches, all_partial_matches
